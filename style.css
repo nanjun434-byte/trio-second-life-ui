@@ -1,0 +1,18 @@
+#trio-second-life-root { position: fixed; z-index: 9998; right: max(12px, env(safe-area-inset-right)); bottom: max(84px, calc(env(safe-area-inset-bottom) + 64px)); font: 14px/1.45 system-ui, sans-serif; color: var(--SmartThemeBodyColor, #222); }
+.tsl-orb { width: 50px; height: 50px; border: 0; border-radius: 50%; background: #4f7d45; color: white; box-shadow: 0 4px 16px #0005; font-size: 24px; touch-action: none; cursor: grab; }
+.tsl-panel { position: fixed; width: min(360px, calc(100vw - 24px)); max-height: min(70vh, 620px); overflow: auto; overscroll-behavior: contain; border: 1px solid #ffffff33; border-radius: 14px; background: var(--SmartThemeBlurTintColor, #f5f1e8); box-shadow: 0 12px 32px #0007; }
+.tsl-panel header { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 12px; background: #365d35; color: white; }
+.tsl-close { border: 0; background: transparent; color: inherit; font-size: 20px; }
+.tsl-panel nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }
+.tsl-panel nav button, .tsl-primary, .tsl-transfer button { min-height: 38px; border: 1px solid #71886b; border-radius: 8px; background: #fff9; color: inherit; }
+.tsl-panel main { min-height: 170px; padding: 4px 14px 14px; overflow-wrap: anywhere; }
+.tsl-panel footer { padding: 9px 12px; border-top: 1px solid #8884; font-size: 12px; }
+.tsl-panel footer b { color: #a14d00; }
+.tsl-primary { width: 100%; background: #4f7d45; color: white; font-weight: 700; }
+.tsl-result { min-height: 2em; margin-top: 10px; }
+.tsl-item { display: grid; gap: 6px; padding: 8px 0; border-bottom: 1px solid #8883; }
+.tsl-transfer { display: flex; gap: 6px; }
+.tsl-transfer input { min-width: 0; width: 72px; border: 1px solid #8888; border-radius: 7px; padding: 5px; }
+.tsl-transfer button { flex: 1; }
+@media (max-width: 430px) { .tsl-panel { max-height: 64vh; } }
+
