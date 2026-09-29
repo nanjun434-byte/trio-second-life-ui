@@ -1,4 +1,4 @@
-import { ContextGuard, StaleContextError, identityKey, resolveContextIdentity } from './context.mjs';
+import { ContextGuard, StaleContextError, createOperationId, identityKey, resolveContextIdentity } from './context.mjs';
 
 const API_ROOT = '/api/plugins/trio-second-life';
 const POSITION_KEY = 'trio-second-life:orb-position:v1';
@@ -114,7 +114,7 @@ async function showFarm(main) {
     try {
       const preview = await api('/farm/actions/preview', { method: 'POST', body: JSON.stringify({ saveId: operationSave.saveId }), signal: operationToken.signal });
       guard.assertCurrent(operationToken, activeIdentityKey);
-      const result = await api('/farm/actions/commit', { method: 'POST', body: JSON.stringify({ saveId: operationSave.saveId, expectedRevision: operationSave.revision, operationId: crypto.randomUUID(), action: 'water_all' }), signal: operationToken.signal });
+      const result = await api('/farm/actions/commit', { method: 'POST', body: JSON.stringify({ saveId: operationSave.saveId, expectedRevision: operationSave.revision, operationId: createOperationId(), action: 'water_all' }), signal: operationToken.signal });
       guard.assertCurrent(operationToken, activeIdentityKey);
       main.querySelector('.tsl-result').textContent = preview.affected
         ? '已浇水 ' + result.affected + ' 格，游戏时间 +' + result.timeCostMinutes + ' 分钟。'
@@ -153,7 +153,7 @@ async function showInventory(main, container) {
       const result = await api('/inventory/move', { method: 'POST', body: JSON.stringify({
         saveId: operationSave.saveId,
         expectedRevision: operationSave.revision,
-        operationId: crypto.randomUUID(),
+        operationId: createOperationId(),
         from: button.dataset.from,
         to: button.dataset.to,
         itemId: button.dataset.item,
