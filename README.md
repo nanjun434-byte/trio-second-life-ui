@@ -12,9 +12,13 @@
 
 服务端插件安装说明：<https://github.com/nanjun434-byte/trio-second-life-server>
 
+## 角色卡
+
+可导入的 Character Card V2 世界卡位于仓库的 `character-card/trio-second-life.character.json`。未安装服务端插件时仍可普通聊天，但没有动态存档与 runtime 联动。
+
 ## 当前版本
 
-v0.2.0，DEMO。地图、人物和设置仍明确标记为未实现。
+v0.3.0，DEMO。已支持世界卡识别、按聊天绑定存档与生成时临时 runtime 注入；地图、人物和设置仍明确标记为未实现。
 
 ## 隐私与版权
 

@@ -1,4 +1,5 @@
 #trio-second-life-root { position: fixed; z-index: 9998; right: max(12px, env(safe-area-inset-right)); bottom: max(84px, calc(env(safe-area-inset-bottom) + 64px)); font: 14px/1.45 system-ui, sans-serif; color: var(--SmartThemeBodyColor, #222); }
+#trio-second-life-root [hidden] { display: none !important; }
 .tsl-orb { width: 50px; height: 50px; border: 0; border-radius: 50%; background: #4f7d45; color: white; box-shadow: 0 4px 16px #0005; font-size: 24px; touch-action: none; cursor: grab; }
 .tsl-panel { position: fixed; width: min(360px, calc(100vw - 24px)); max-height: min(70vh, 620px); overflow: auto; overscroll-behavior: contain; border: 1px solid #ffffff33; border-radius: 14px; background: var(--SmartThemeBlurTintColor, #f5f1e8); box-shadow: 0 12px 32px #0007; }
 .tsl-panel header { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 12px; background: #365d35; color: white; }

@@ -1,4 +1,22 @@
-export function resolveContextIdentity(context) {
+export const TRIO_CARD_WORLD_ID = 'sos_trio_second_life_zh';
+export const TRIO_CARD_GAME_ID = 'story_of_seasons_trio_of_towns';
+
+export function getTrioCardMetadata(context) {
+  if (context?.groupId !== null && context?.groupId !== undefined && String(context.groupId).length > 0) return null;
+  const character = context?.characters?.[Number(context?.characterId)];
+  const metadata = character?.data?.extensions?.trio_second_life
+    ?? character?.extensions?.trio_second_life;
+  if (!metadata || metadata.schema_version !== 2
+    || metadata.world_id !== TRIO_CARD_WORLD_ID
+    || metadata.game_id !== TRIO_CARD_GAME_ID
+    || metadata.card_role !== 'world_ensemble'
+    || metadata.runtime_contract_version !== 2) return null;
+  return metadata;
+}
+
+export function ensureContextBinding(context, createId = createOperationId) {
+  const card = getTrioCardMetadata(context);
+  if (!card) return null;
   const chatSessionId = firstText(
     safeCall(() => context?.getCurrentChatId?.()),
     context?.chatId,
@@ -7,21 +25,34 @@ export function resolveContextIdentity(context) {
     context?.chat_metadata?.chat_id,
   );
   if (!chatSessionId) return null;
+  const chatMetadata = context?.chatMetadata ?? context?.chat_metadata;
+  if (!chatMetadata || typeof chatMetadata !== 'object') return null;
 
-  let characterWorldId;
-  if (context?.groupId !== null && context?.groupId !== undefined && String(context.groupId).length > 0) {
-    characterWorldId = 'group:' + String(context.groupId);
-  } else {
-    const character = context?.characters?.[Number(context?.characterId)];
-    const stableCharacterId = firstText(character?.avatar, character?.id);
-    if (!stableCharacterId) return null;
-    characterWorldId = 'character:' + stableCharacterId;
-  }
-
-  const metadata = context?.chatMetadata ?? context?.chat_metadata ?? {};
-  const branchSource = firstText(metadata.branch_id, metadata.branchId, metadata.main_chat, metadata.mainChat);
-  const branchId = branchSource ? 'branch:' + branchSource : 'chat:' + chatSessionId;
-  return { characterWorldId, chatSessionId: String(chatSessionId), branchId };
+  const existing = chatMetadata.trio_second_life;
+  const sameChat = existing?.schema_version === 2
+    && existing.world_id === card.world_id
+    && existing.origin_chat_id === String(chatSessionId)
+    && typeof existing.chat_instance_id === 'string'
+    && existing.chat_instance_id.length > 0;
+  const binding = sameChat ? existing : {
+    schema_version: 2,
+    world_id: card.world_id,
+    chat_instance_id: createId(),
+    save_id: null,
+    origin_chat_id: String(chatSessionId),
+    last_server_revision: null,
+    canonical_data_version: card.canonical_profile ?? 'unknown',
+  };
+  chatMetadata.trio_second_life = binding;
+  return {
+    identity: {
+      characterWorldId: card.world_id,
+      chatSessionId: String(chatSessionId),
+      branchId: 'instance:' + binding.chat_instance_id,
+    },
+    binding,
+    changed: !sameChat,
+  };
 }
 
 export function identityKey(identity) {

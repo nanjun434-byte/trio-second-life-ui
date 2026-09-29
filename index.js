@@ -1,4 +1,4 @@
-import { ContextGuard, StaleContextError, createOperationId, identityKey, resolveContextIdentity } from './context.mjs';
+import { ContextGuard, StaleContextError, createOperationId, ensureContextBinding, getTrioCardMetadata, identityKey } from './context.mjs';
 
 const API_ROOT = '/api/plugins/trio-second-life';
 const POSITION_KEY = 'trio-second-life:orb-position:v1';
@@ -14,7 +14,7 @@ class ApiError extends Error {
 }
 
 function currentIdentity() {
-  return resolveContextIdentity(SillyTavern.getContext());
+  return ensureContextBinding(SillyTavern.getContext())?.identity ?? null;
 }
 
 async function api(path, options = {}) {
@@ -33,17 +33,69 @@ async function api(path, options = {}) {
 }
 
 async function ensureSave() {
-  const identity = currentIdentity();
-  if (!identity) throw new ApiError(409, 'NO_ACTIVE_CHAT');
+  const context = SillyTavern.getContext();
+  const bindingResult = ensureContextBinding(context);
+  const identity = bindingResult?.identity;
+  if (!identity) throw new ApiError(409, getTrioCardMetadata(context) ? 'CHAT_ID_UNAVAILABLE' : 'TRIO_CARD_NOT_ACTIVE');
   const key = identityKey(identity);
   if (save && activeIdentityKey === key) return save;
   const token = guard.capture(key);
+  if (bindingResult.changed) await context.saveMetadata?.();
   const initialized = await api('/saves/initialize', { method: 'POST', body: JSON.stringify(identity), signal: token.signal });
   guard.assertCurrent(token, identityKey(currentIdentity()));
+  const liveContext = SillyTavern.getContext();
+  const liveBinding = ensureContextBinding(liveContext);
+  if (!liveBinding || identityKey(liveBinding.identity) !== key) throw new StaleContextError();
+  liveBinding.binding.save_id = initialized.saveId;
+  liveBinding.binding.last_server_revision = initialized.revision;
+  await liveContext.saveMetadata?.();
   save = initialized;
   activeIdentityKey = key;
   return save;
 }
+
+async function persistRevision(revision) {
+  const context = SillyTavern.getContext();
+  const bindingResult = ensureContextBinding(context);
+  if (!bindingResult || identityKey(bindingResult.identity) !== activeIdentityKey) return;
+  bindingResult.binding.last_server_revision = revision;
+  await context.saveMetadata?.();
+}
+
+async function trioSecondLifeGenerationInterceptor(chat, _contextSize, _abort, _type) {
+  const context = SillyTavern.getContext();
+  const bindingResult = ensureContextBinding(context);
+  if (!bindingResult) return;
+  const key = identityKey(bindingResult.identity);
+  const token = guard.capture(key);
+  try {
+    if (bindingResult.changed) await context.saveMetadata?.();
+    let currentSave = save && activeIdentityKey === key ? save : null;
+    if (!currentSave) {
+      currentSave = await api('/saves/initialize', {
+        method: 'POST', body: JSON.stringify(bindingResult.identity), signal: token.signal,
+      });
+      guard.assertCurrent(token, identityKey(currentIdentity()));
+      const liveContext = SillyTavern.getContext();
+      const liveBinding = ensureContextBinding(liveContext);
+      if (!liveBinding || identityKey(liveBinding.identity) !== key) return;
+      liveBinding.binding.save_id = currentSave.saveId;
+      liveBinding.binding.last_server_revision = currentSave.revision;
+      await liveContext.saveMetadata?.();
+      save = currentSave;
+      activeIdentityKey = key;
+    }
+    const result = await api('/runtime?saveId=' + encodeURIComponent(currentSave.saveId), { signal: token.signal });
+    guard.assertCurrent(token, identityKey(currentIdentity()));
+    if (result.runtime) chat.push({ is_system: true, mes: result.runtime, name: 'Trio Second Life Runtime', extra: {} });
+  } catch (error) {
+    if (!(error instanceof StaleContextError) && error.name !== 'AbortError') {
+      console.warn('[TrioSecondLife] runtime unavailable; generation continues without dynamic state.');
+    }
+  }
+}
+
+globalThis.trioSecondLifeGenerationInterceptor = trioSecondLifeGenerationInterceptor;
 
 function renderShell() {
   const root = document.createElement('section');
@@ -120,6 +172,7 @@ async function showFarm(main) {
         ? '已浇水 ' + result.affected + ' 格，游戏时间 +' + result.timeCostMinutes + ' 分钟。'
         : '今天已经浇过水，没有重复耗时。';
       save.revision = result.revision;
+      await persistRevision(result.revision);
       setTimeout(() => { if (operationKey === activeIdentityKey) showFarm(main); }, 500);
     } catch (error) { await handleOperationError(error); }
     finally { button.disabled = false; }
@@ -161,6 +214,7 @@ async function showInventory(main, container) {
       }), signal: operationToken.signal });
       guard.assertCurrent(operationToken, activeIdentityKey);
       save.revision = result.revision;
+      await persistRevision(result.revision);
       toastr.success('已转移 ' + quantity + ' 个物品。');
       await showInventory(main, container);
     } catch (error) { await handleOperationError(error); }
@@ -189,9 +243,21 @@ function onChatChanged() {
   guard.invalidate();
   save = null;
   activeIdentityKey = '';
+  syncCardMode();
   if (panelElements && !panelElements.panel.hidden) {
     panelElements.main.innerHTML = '<p>聊天已切换，正在载入对应存档……</p>';
     void refreshCurrentView();
+  }
+}
+
+function syncCardMode() {
+  if (!panelElements) return;
+  const enabled = Boolean(getTrioCardMetadata(SillyTavern.getContext()));
+  panelElements.orb.hidden = !enabled;
+  if (!enabled) {
+    panelElements.panel.hidden = true;
+    save = null;
+    activeIdentityKey = '';
   }
 }
 
@@ -257,6 +323,9 @@ export function activate() {
   renderShell();
   const context = SillyTavern.getContext();
   if (context.eventSource && context.event_types?.CHAT_CHANGED) context.eventSource.on(context.event_types.CHAT_CHANGED, onChatChanged);
-  console.log('[TrioSecondLife] UI loaded with chat-isolated storage and no generation hooks');
+  if (context.eventSource && context.event_types?.CHARACTER_EDITED) context.eventSource.on(context.event_types.CHARACTER_EDITED, onChatChanged);
+  if (context.eventSource && context.event_types?.APP_READY) context.eventSource.on(context.event_types.APP_READY, syncCardMode);
+  syncCardMode();
+  console.log('[TrioSecondLife] card-aware UI and ephemeral runtime interceptor loaded');
 }
 
