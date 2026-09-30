@@ -1,10 +1,10 @@
 #trio-second-life-root { position: fixed; z-index: 9998; right: max(12px, env(safe-area-inset-right)); bottom: max(84px, calc(env(safe-area-inset-bottom) + 64px)); font: 14px/1.45 system-ui, sans-serif; color: var(--SmartThemeBodyColor, #222); }
 #trio-second-life-root [hidden] { display: none !important; }
 .tsl-orb { width: 50px; height: 50px; border: 0; border-radius: 50%; background: #4f7d45; color: white; box-shadow: 0 4px 16px #0005; font-size: 24px; touch-action: none; cursor: grab; }
-.tsl-panel { position: fixed; width: min(360px, calc(100vw - 24px)); max-height: min(70vh, 620px); overflow: auto; overscroll-behavior: contain; border: 1px solid #ffffff33; border-radius: 14px; background: var(--SmartThemeBlurTintColor, #f5f1e8); box-shadow: 0 12px 32px #0007; }
+.tsl-panel { position: fixed; width: min(620px, calc(100vw - 24px)); max-height: min(76vh, 720px); overflow: auto; overscroll-behavior: contain; border: 1px solid #ffffff33; border-radius: 12px; background: var(--SmartThemeBlurTintColor, #f5f1e8); box-shadow: 0 12px 32px #0007; }
 .tsl-panel header { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 12px; background: #365d35; color: white; }
 .tsl-close { border: 0; background: transparent; color: inherit; font-size: 20px; }
-.tsl-panel nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }
+.tsl-panel nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 10px; }
 .tsl-panel nav button, .tsl-primary, .tsl-transfer button { min-height: 38px; border: 1px solid #71886b; border-radius: 8px; background: #fff9; color: inherit; }
 .tsl-panel main { min-height: 170px; padding: 4px 14px 14px; overflow-wrap: anywhere; }
 .tsl-panel footer { padding: 9px 12px; border-top: 1px solid #8884; font-size: 12px; }
@@ -15,5 +15,71 @@
 .tsl-transfer { display: flex; gap: 6px; }
 .tsl-transfer input { min-width: 0; width: 72px; border: 1px solid #8888; border-radius: 7px; padding: 5px; }
 .tsl-transfer button { flex: 1; }
-@media (max-width: 430px) { .tsl-panel { max-height: 64vh; } }
-
+.tsl-farm-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 2px 12px; border-bottom: 1px solid #92a38a66; }
+.tsl-farm-heading h3 { margin: 2px 0 0; font-size: 20px; line-height: 1.2; }
+.tsl-kicker { color: #a9c79a; font-size: 11px; }
+.tsl-demo-mark { flex: none; border: 1px solid #d99d4a; padding: 3px 7px; color: #f3c479; font-size: 10px; }
+.tsl-clock-strip { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; margin: 12px 0 10px; padding: 10px 12px; background: #244737; color: #f2f4e8; }
+.tsl-clock-strip span { color: #cbd8c5; white-space: nowrap; }
+.tsl-farm-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-bottom: 16px; background: #a2aa9970; border: 1px solid #a2aa9970; }
+.tsl-farm-summary div { display: flex; min-width: 0; flex-direction: column; gap: 2px; padding: 8px 10px; background: #313c34; }
+.tsl-farm-summary strong { color: #f4e8bf; font-size: 18px; font-variant-numeric: tabular-nums; }
+.tsl-farm-summary span { overflow: hidden; color: #c8d0c4; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.tsl-plot-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.tsl-plot-heading h4, .tsl-empty-state h4 { margin: 0; font-size: 15px; }
+.tsl-plot-heading span { color: #b8c0b5; font-size: 11px; }
+.tsl-plot-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.tsl-plot { display: flex; min-width: 0; aspect-ratio: 1.15; flex-direction: column; align-items: flex-start; justify-content: space-between; overflow: hidden; padding: 7px; border: 1px solid #748570; background: #34493c; color: inherit; text-align: left; cursor: pointer; }
+.tsl-plot:hover, .tsl-plot[aria-pressed="true"] { outline: 2px solid #d6c276; outline-offset: -2px; }
+.tsl-plot.is-watered { border-color: #65b9c1; background: #24484a; }
+.tsl-plot-number { color: #c4cebb; font-size: 10px; }
+.tsl-plot-crop { display: grid; width: 28px; aspect-ratio: 1; place-items: center; border: 1px solid #b4a96c; background: #645c38; color: #f1dda0; font-size: 13px; }
+.tsl-plot strong { overflow-wrap: anywhere; color: #fff9e8; font-size: 12px; font-weight: 600; }
+.tsl-plot small { color: #c3d8c2; font-size: 10px; }
+.tsl-plot-detail { display: grid; min-height: 54px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; margin-top: 8px; padding: 8px 10px; border-left: 3px solid #d6c276; background: #313c34; }
+.tsl-plot-detail strong { color: #f4e8bf; }
+.tsl-plot-detail span { text-align: right; }
+.tsl-plot-detail small { grid-column: 1 / -1; color: #c8d0c4; }
+.tsl-farm-actions { position: sticky; bottom: -14px; margin: 12px -14px -14px; padding: 10px 14px; border-top: 1px solid #ffffff26; background: var(--SmartThemeBlurTintColor, #202522); }
+.tsl-farm-actions .tsl-result { margin-bottom: 0; }
+.tsl-empty-state { margin-top: 14px; padding: 14px; border-left: 3px solid #83a56d; background: #26362d; }
+.tsl-empty-state p { color: #c5cec1; }
+.tsl-animal-systems { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+.tsl-animal-systems span { padding: 9px; border: 1px solid #788477; color: #cbd7c5; font-size: 12px; }
+.tsl-barn-scene, .tsl-shop-scene { position: relative; height: 150px; overflow: hidden; margin: 12px 0; border: 4px solid #5e4634; background: #dcae72; box-shadow: inset 0 -34px #b9784e, 4px 4px 0 #3c3029; image-rendering: pixelated; }
+.tsl-barn-scene::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(90deg, transparent 48%, #936743 49%, #936743 51%, transparent 52%); background-size: 48px 100%; opacity: .34; }
+.tsl-barn-window { position: absolute; top: 22px; left: 24px; width: 64px; height: 48px; border: 6px solid #fff0c9; background: #80b9c5; box-shadow: inset 0 0 0 4px #4d7d86; }
+.tsl-trough { position: absolute; right: 28px; bottom: 23px; width: 112px; height: 28px; border: 5px solid #594336; background: #8d5d3d; box-shadow: inset 0 8px #647c48; }
+.tsl-hay { position: absolute; left: 116px; bottom: 24px; width: 52px; height: 35px; background: #d9b843; box-shadow: 8px -8px 0 #e8cc64, 16px 0 0 #caa13c; }
+.tsl-animal-list { display: grid; gap: 8px; }
+.tsl-animal-card { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px; border: 2px solid #84664c; background: #fff3d8; color: #3c3029; box-shadow: 3px 3px 0 #5e4634; }
+.tsl-animal-sprite { position: relative; width: 52px; height: 44px; background: #f7eee2; box-shadow: inset 0 -10px #d8c4ae; }
+.tsl-animal-sprite::before { content: ''; position: absolute; left: 10px; top: 12px; width: 32px; height: 24px; background: #f5f2e9; box-shadow: -6px -6px 0 #5a4438, 22px -4px 0 #5a4438, 8px 20px 0 -4px #5a4438, 24px 20px 0 -4px #5a4438; }
+.tsl-animal-info h4 { margin: 2px 0 5px; font-size: 16px; }
+.tsl-animal-info p { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; font-size: 12px; }
+.tsl-animal-info .is-done { color: #2f7659; font-weight: 700; }
+.tsl-animal-actions { display: grid; gap: 5px; }
+.tsl-animal-actions button { min-width: 76px; min-height: 30px; border: 2px solid #6d5542; background: #f3d786; color: #3c3029; }
+.tsl-animal-actions button:disabled { opacity: .5; }
+.tsl-shop-scene { background: #9dc7ba; box-shadow: inset 0 -36px #d7a96f, 4px 4px 0 #3c3029; }
+.tsl-shop-awning { height: 42px; border-bottom: 5px solid #6c4b42; background: repeating-linear-gradient(90deg, #d86767 0 28px, #fff0d0 28px 56px); }
+.tsl-shop-shelf { display: flex; align-items: end; justify-content: space-around; height: 75px; margin: 16px 30px 0; border-bottom: 10px solid #6c4b42; }
+.tsl-shop-shelf i { display: block; width: 38px; height: 30px; background: #70a45b; box-shadow: inset 0 -8px #446d3b, 4px -5px 0 #e5c951; }
+.tsl-shop-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #8a7058; background: #fff3d8; color: #3c3029; }
+.tsl-shop-row div { display: grid; gap: 3px; }
+.tsl-shop-row small, .tsl-source-note { color: #746657; font-size: 11px; }
+.tsl-shop-row > span { padding: 4px 7px; border: 2px solid currentColor; font-weight: 700; }
+.tsl-shop-row .is-open { color: #2f7659; }
+.tsl-shop-row .is-closed { color: #a0444f; }
+@media (max-width: 520px) {
+  .tsl-panel { max-height: 68vh; }
+  .tsl-panel nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tsl-clock-strip { grid-template-columns: 1fr auto; gap: 6px 10px; }
+  .tsl-clock-strip span:last-child { grid-column: 1 / -1; }
+  .tsl-farm-summary div { padding: 7px; }
+  .tsl-plot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tsl-plot { aspect-ratio: 1.25; }
+  .tsl-animal-card { grid-template-columns: 54px minmax(0, 1fr); }
+  .tsl-animal-actions { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tsl-animal-actions button { min-width: 0; }
+}
